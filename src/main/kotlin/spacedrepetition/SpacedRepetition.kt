@@ -13,50 +13,41 @@ class SpacedRepetition {
     fun calculateRepetition(card: Card, quality: Int): Card {
         validateQualityFactorInput(quality)
 
-        // retrieve the stored values (default values if new cards)
-        var repetitions: Int = card.repetitions
-        var easiness: Float = card.easinessFactor
-        var interval: Int = card.interval
+        val easiness = calculateEasinessFactor(card.easinessFactor, quality)
+        val repetitions = calculateRepetitions(quality, card.repetitions)
+        val interval = calculateInterval(repetitions, card.interval, easiness)
 
-        // easiness factor
-        easiness = calculateEasinessFactor(easiness, quality)
-
-        // repetitions
-        if (quality < 3) {
-            repetitions = 0
-        } else {
-            repetitions += 1
-        }
-
-        // interval
-        interval = when {
-            repetitions <= 1 -> 1
-            repetitions == 2 -> 6
-            else -> (interval * easiness).roundToInt()
-        }
-        log.info(
-                "For card ${card.frontSide} calculated easiness = $easiness, " +
-                        "interval = $interval, " +
-                        "next repetition = ${calculateNextPracticeDate(interval)}," +
-                        "rep total = $repetitions"
-        )
-
-        return card.withUpdatedRepetitionProperties(
+        val cardAfterRepetition = card.withUpdatedRepetitionProperties(
                 newRepetitions = repetitions,
                 newEasinessFactor = easiness,
                 newNextRepetitionDate = calculateNextPracticeDate(interval),
                 newInterval = interval
         )
+        log.info(cardAfterRepetition.toString())
+        return cardAfterRepetition
     }
-
-    private fun calculateEasinessFactor(easiness: Float, quality: Int) =
-            Math.max(1.3, easiness + 0.1 - (5.0 - quality) * (0.08 + (5.0 - quality) * 0.02)).toFloat()
 
     private fun validateQualityFactorInput(quality: Int) {
         log.info("Input quality: $quality")
         if (quality < 0 || quality > 5) {
             throw IllegalArgumentException("Provided quality value is invalid ($quality)")
         }
+    }
+
+    private fun calculateEasinessFactor(easiness: Float, quality: Int) =
+            Math.max(1.3, easiness + 0.1 - (5.0 - quality) * (0.08 + (5.0 - quality) * 0.02)).toFloat()
+
+
+    private fun calculateRepetitions(quality: Int, cardRepetitions: Int) = if (quality < 3) {
+        0
+    } else {
+        cardRepetitions + 1
+    }
+
+    private fun calculateInterval(repetitions: Int, cardInterval: Int, easiness: Float) = when {
+        repetitions <= 1 -> 1
+        repetitions == 2 -> 6
+        else -> (cardInterval * easiness).roundToInt()
     }
 
     private fun calculateNextPracticeDate(interval: Int): LocalDateTime {
