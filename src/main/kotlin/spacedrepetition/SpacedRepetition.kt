@@ -11,7 +11,6 @@ import kotlin.math.roundToInt
 class SpacedRepetition {
 
     fun calculateRepetition(card: Card, quality: Int): Card {
-        log.info("Input quality: $quality")
         validateQualityFactorInput(quality)
 
         // retrieve the stored values (default values if new cards)
@@ -54,8 +53,9 @@ class SpacedRepetition {
             Math.max(1.3, easiness + 0.1 - (5.0 - quality) * (0.08 + (5.0 - quality) * 0.02)).toFloat()
 
     private fun validateQualityFactorInput(quality: Int) {
+        log.info("Input quality: $quality")
         if (quality < 0 || quality > 5) {
-            throw IllegalArgumentException("Wrong quality")
+            throw IllegalArgumentException("Provided quality value is invalid ($quality)")
         }
     }
 
